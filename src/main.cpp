@@ -38,8 +38,10 @@ private:
         QWidget *dataTab = new QWidget();
         QHBoxLayout *dataLayout = new QHBoxLayout(dataTab);
         QListWidget *dataList = new QListWidget();
-        dataList->addItems({"预览", "导入", "删除"});
+        QStringList dataItems = {"预览", "导入", "删除"};
+        dataList->addItems(dataItems);
         dataList->setFixedWidth(150);
+        dataList->setCurrentRow(0); // 默认选中第一项
         QPushButton *dataPrev = new QPushButton("上一步");
         QPushButton *dataNext = new QPushButton("下一步");
         QVBoxLayout *dataBtnLayout = new QVBoxLayout();
@@ -51,12 +53,29 @@ private:
         dataLayout->addStretch(1);
         tabWidget->addTab(dataTab, "数据管理");
 
+        // 为数据管理标签页添加按钮功能
+        int dataCurrentIndex = 0;
+        QObject::connect(dataPrev, &QPushButton::clicked, [dataList, &dataCurrentIndex]() {
+            if (dataCurrentIndex > 0) {
+                dataCurrentIndex--;
+                dataList->setCurrentRow(dataCurrentIndex);
+            }
+        });
+        QObject::connect(dataNext, &QPushButton::clicked, [dataList, &dataCurrentIndex, dataItems]() {
+            if (dataCurrentIndex < dataItems.size() - 1) {
+                dataCurrentIndex++;
+                dataList->setCurrentRow(dataCurrentIndex);
+            }
+        });
+
         // 读入序列标签页
         QWidget *sequenceTab = new QWidget();
         QHBoxLayout *sequenceLayout = new QHBoxLayout(sequenceTab);
         QListWidget *sequenceList = new QListWidget();
-        sequenceList->addItems({"基本序列", "参考序列", "序列融合"});
+        QStringList sequenceItems = {"基本序列", "参考序列", "序列融合"};
+        sequenceList->addItems(sequenceItems);
         sequenceList->setFixedWidth(150);
+        sequenceList->setCurrentRow(0); // 默认选中第一项
         QPushButton *sequencePrev = new QPushButton("上一步");
         QPushButton *sequenceNext = new QPushButton("下一步");
         QVBoxLayout *sequenceBtnLayout = new QVBoxLayout();
@@ -67,13 +86,30 @@ private:
         sequenceLayout->addLayout(sequenceBtnLayout);
         sequenceLayout->addStretch(1);
         tabWidget->addTab(sequenceTab, "读入序列");
+        
+        // 为读入序列标签页添加按钮功能
+        int sequenceCurrentIndex = 0;
+        QObject::connect(sequencePrev, &QPushButton::clicked, [sequenceList, &sequenceCurrentIndex]() {
+            if (sequenceCurrentIndex > 0) {
+                sequenceCurrentIndex--;
+                sequenceList->setCurrentRow(sequenceCurrentIndex);
+            }
+        });
+        QObject::connect(sequenceNext, &QPushButton::clicked, [sequenceList, &sequenceCurrentIndex, sequenceItems]() {
+            if (sequenceCurrentIndex < sequenceItems.size() - 1) {
+                sequenceCurrentIndex++;
+                sequenceList->setCurrentRow(sequenceCurrentIndex);
+            }
+        });
 
         // 手术计划标签页
         QWidget *planTab = new QWidget();
         QHBoxLayout *planLayout = new QHBoxLayout(planTab);
         QListWidget *planList = new QListWidget();
-        planList->addItems({"三维重建", "标记点", "路径规划"});
+        QStringList planItems = {"三维重建", "标记点", "路径规划"};
+        planList->addItems(planItems);
         planList->setFixedWidth(150);
+        planList->setCurrentRow(0); // 默认选中第一项
         QPushButton *planPrev = new QPushButton("上一步");
         QPushButton *planNext = new QPushButton("下一步");
         QVBoxLayout *planBtnLayout = new QVBoxLayout();
@@ -85,12 +121,29 @@ private:
         planLayout->addStretch(1);
         tabWidget->addTab(planTab, "手术计划");
 
+        // 为手术计划标签页添加按钮功能
+        int planCurrentIndex = 0;
+        QObject::connect(planPrev, &QPushButton::clicked, [planList, &planCurrentIndex]() {
+            if (planCurrentIndex > 0) {
+                planCurrentIndex--;
+                planList->setCurrentRow(planCurrentIndex);
+            }
+        });
+        QObject::connect(planNext, &QPushButton::clicked, [planList, &planCurrentIndex, planItems]() {
+            if (planCurrentIndex < planItems.size() - 1) {
+                planCurrentIndex++;
+                planList->setCurrentRow(planCurrentIndex);
+            }
+        });
+
         // 系统设置标签页
         QWidget *settingsTab = new QWidget();
         QHBoxLayout *settingsLayout = new QHBoxLayout(settingsTab);
         QListWidget *settingsList = new QListWidget();
-        settingsList->addItems({"设备调试", "注册", "验证点"});
+        QStringList settingsItems = {"设备调试", "注册", "验证点"};
+        settingsList->addItems(settingsItems);
         settingsList->setFixedWidth(150);
+        settingsList->setCurrentRow(0); // 默认选中第一项
         QPushButton *settingsPrev = new QPushButton("上一步");
         QPushButton *settingsNext = new QPushButton("下一步");
         QVBoxLayout *settingsBtnLayout = new QVBoxLayout();
@@ -102,12 +155,29 @@ private:
         settingsLayout->addStretch(1);
         tabWidget->addTab(settingsTab, "系统设置");
 
+        // 为系统设置标签页添加按钮功能
+        int settingsCurrentIndex = 0;
+        QObject::connect(settingsPrev, &QPushButton::clicked, [settingsList, &settingsCurrentIndex]() {
+            if (settingsCurrentIndex > 0) {
+                settingsCurrentIndex--;
+                settingsList->setCurrentRow(settingsCurrentIndex);
+            }
+        });
+        QObject::connect(settingsNext, &QPushButton::clicked, [settingsList, &settingsCurrentIndex, settingsItems]() {
+            if (settingsCurrentIndex < settingsItems.size() - 1) {
+                settingsCurrentIndex++;
+                settingsList->setCurrentRow(settingsCurrentIndex);
+            }
+        });
+
         // 术中导航标签页
         QWidget *navigationTab = new QWidget();
         QHBoxLayout *navigationLayout = new QHBoxLayout(navigationTab);
         QListWidget *navigationList = new QListWidget();
-        navigationList->addItems({"标准模式", "轨迹模式", "前视模式"});
+        QStringList navigationItems = {"标准模式", "轨迹模式", "前视模式"};
+        navigationList->addItems(navigationItems);
         navigationList->setFixedWidth(150);
+        navigationList->setCurrentRow(0); // 默认选中第一项
         QPushButton *navigationPrev = new QPushButton("上一步");
         QPushButton *navigationNext = new QPushButton("下一步");
         QVBoxLayout *navigationBtnLayout = new QVBoxLayout();
@@ -119,12 +189,29 @@ private:
         navigationLayout->addStretch(1);
         tabWidget->addTab(navigationTab, "术中导航");
 
+        // 为术中导航标签页添加按钮功能
+        int navigationCurrentIndex = 0;
+        QObject::connect(navigationPrev, &QPushButton::clicked, [navigationList, &navigationCurrentIndex]() {
+            if (navigationCurrentIndex > 0) {
+                navigationCurrentIndex--;
+                navigationList->setCurrentRow(navigationCurrentIndex);
+            }
+        });
+        QObject::connect(navigationNext, &QPushButton::clicked, [navigationList, &navigationCurrentIndex, navigationItems]() {
+            if (navigationCurrentIndex < navigationItems.size() - 1) {
+                navigationCurrentIndex++;
+                navigationList->setCurrentRow(navigationCurrentIndex);
+            }
+        });
+
         // 存储标签页
         QWidget *storageTab = new QWidget();
         QHBoxLayout *storageLayout = new QHBoxLayout(storageTab);
         QListWidget *storageList = new QListWidget();
-        storageList->addItems({"保存图像", "数据备份", "退出系统"});
+        QStringList storageItems = {"保存图像", "数据备份", "退出系统"};
+        storageList->addItems(storageItems);
         storageList->setFixedWidth(150);
+        storageList->setCurrentRow(0); // 默认选中第一项
         QPushButton *storagePrev = new QPushButton("上一步");
         QPushButton *storageNext = new QPushButton("下一步");
         QVBoxLayout *storageBtnLayout = new QVBoxLayout();
@@ -135,6 +222,21 @@ private:
         storageLayout->addLayout(storageBtnLayout);
         storageLayout->addStretch(1);
         tabWidget->addTab(storageTab, "存储");
+
+        // 为存储标签页添加按钮功能
+        int storageCurrentIndex = 0;
+        QObject::connect(storagePrev, &QPushButton::clicked, [storageList, &storageCurrentIndex]() {
+            if (storageCurrentIndex > 0) {
+                storageCurrentIndex--;
+                storageList->setCurrentRow(storageCurrentIndex);
+            }
+        });
+        QObject::connect(storageNext, &QPushButton::clicked, [storageList, &storageCurrentIndex, storageItems]() {
+            if (storageCurrentIndex < storageItems.size() - 1) {
+                storageCurrentIndex++;
+                storageList->setCurrentRow(storageCurrentIndex);
+            }
+        });
 
         return tabWidget;
     }
@@ -212,6 +314,14 @@ int main(int argc, char *argv[]) {
         }
         QSplitter {
             background-color: #FFFFFF;
+        }
+        QListWidget::item:selected {
+            border: 2px solid #00BFFF;
+            background-color: #1C6EA4;
+            color: #FFFFFF;
+        }
+        QListWidget::item:hover {
+            background-color: #2A8FBD;
         }
     )";
     app.setStyleSheet(globalStyle);
