@@ -18,7 +18,9 @@
 #include <QStackedWidget>
 #include <QPixmap>
 #include <QTimer>
-
+#include <QTransform>
+#include <QRadioButton>
+#include <QHeaderView> 
 class NavigationSystemUI : public QMainWindow {
 public:
     NavigationSystemUI(QWidget *parent = nullptr) : QMainWindow(parent) {
@@ -33,7 +35,7 @@ public:
         QStringList menuTitles = {"数据管理", "序列操作", "计划管理", "系统设置", "导航控制", "数据存储"};
         for (int i = 0; i < menuTitles.size(); ++i) {
             QPushButton *menuBtn = new QPushButton(menuTitles[i]);
-            menuBtn->setFixedWidth(100);  // 固定按钮宽度
+            menuBtn->setFixedWidth(75);  // 固定按钮宽度
             menuLayout->addWidget(menuBtn);
             connect(menuBtn, &QPushButton::clicked, [this, i]() {
                 taskPanel->setVisible(true);
@@ -42,11 +44,11 @@ public:
         }
         // 创建可隐藏的任务栏
         taskPanel = createTaskPanel();
-        taskPanel->setFixedWidth(1000);  // 固定任务栏宽度
+        taskPanel->setFixedWidth(750);  // 固定任务栏宽度
 
         // 创建展开/收起按钮
         toggleTaskPanelBtn = new QPushButton("▼");
-        toggleTaskPanelBtn->setFixedWidth(100);   // 设置小箭头按钮大小
+        toggleTaskPanelBtn->setFixedWidth(75);   // 设置小箭头按钮大小
         menuLayout->addWidget(toggleTaskPanelBtn, 0, Qt::AlignLeft);
         mainLayout->addLayout(menuLayout);
         mainLayout->addWidget(taskPanel);
@@ -128,24 +130,14 @@ private:
         QVBoxLayout *layout = new QVBoxLayout(container);
         layout->setContentsMargins(0, 0, 0, 0);
 
-        // // 创建图像窗口管理
-        // QHBoxLayout *imageWindowLayout = new QHBoxLayout();
-        // QPushButton *newWindowBtn = new QPushButton("新建图像窗口");
-        // imageWindowLayout->addWidget(newWindowBtn);
-        // layout->addLayout(imageWindowLayout);
-
         // 创建图像显示区域
         imageContainer = new QWidget();
+        imageContainer->setFixedSize(600, 600);  // 固定为正方形区域
         imageGridLayout = new QGridLayout(imageContainer);
         imageGridLayout->setSpacing(0);  // 去除图像间距
-        imageGridLayout->setContentsMargins(0, 0, 0, 0);
-        layout->addWidget(imageContainer);
+        imageGridLayout->setContentsMargins(0, 0, 0, 0);  // 去除边距
+        layout->addWidget(imageContainer, 0, Qt::AlignCenter);  // 居中显示
         imageContainer->setVisible(false);  // 初始隐藏
-
-        // // 连接新建窗口按钮
-        // QObject::connect(newWindowBtn, &QPushButton::clicked, [this]() {
-        //     createImageWindow();
-        // });
 
         return container;
     }
@@ -158,7 +150,7 @@ private:
         QLabel *imageLabel = new QLabel();
         imageLabel->setAlignment(Qt::AlignCenter);
         imageLabel->setStyleSheet("background-color: #FFFFFF; border: 1px solid #1C6EA4;");
-        imageLabel->setFixedSize(800, 800);
+        imageLabel->setFixedSize(600, 600);
 
         // 加载默认图片
         QPixmap defaultImage("./img/1.jpg");
@@ -180,7 +172,7 @@ private:
 
         // 左侧：模式切换和硬盘空间显示
         QWidget *leftPanel = new QWidget();
-        leftPanel->setFixedWidth(200);  // 固定宽度
+        leftPanel->setFixedWidth(150);  // 固定宽度
         QVBoxLayout *leftLayout = new QVBoxLayout(leftPanel);
         
         // 模式切换按钮
@@ -208,11 +200,11 @@ private:
         // 中间：序列列表
         QListWidget *sequenceList = new QListWidget();
         sequenceList->setSelectionMode(QAbstractItemView::SingleSelection);
-        sequenceList->setFixedWidth(500);  // 固定宽度
+        sequenceList->setFixedWidth(375);  // 固定宽度
 
         // 右侧：操作按钮
         QWidget *rightPanel = new QWidget();
-        rightPanel->setFixedWidth(200);  // 固定宽度
+        rightPanel->setFixedWidth(150);  // 固定宽度
         QVBoxLayout *rightLayout = new QVBoxLayout(rightPanel);
         
         QPushButton *portBtn = new QPushButton("导入序列");
@@ -250,7 +242,7 @@ private:
         QWidget *step1 = new QWidget();
         QVBoxLayout *step1Layout = new QVBoxLayout(step1);
         
-        // 序列选择
+        // 基本序列选择
         QHBoxLayout *selectLayout = new QHBoxLayout();
         QLabel *seqLabel = new QLabel("选择序列:");
         QComboBox *seqCombo = new QComboBox();
@@ -263,7 +255,7 @@ private:
         selectLayout->addWidget(typeCombo);
         step1Layout->addLayout(selectLayout);
 
-        // 序列范围
+        // 基本序列范围
         QHBoxLayout *rangeLayout = new QHBoxLayout();
         QLabel *startLabel = new QLabel("起始编号:");
         QLineEdit *startEdit = new QLineEdit();
@@ -275,13 +267,13 @@ private:
         rangeLayout->addWidget(endEdit);
         step1Layout->addLayout(rangeLayout);
 
-        // 下一步按钮
-        QPushButton *nextStep1Btn = new QPushButton("下一步");
-        step1Layout->addWidget(nextStep1Btn, 0, Qt::AlignRight);
+        // 读入序列按钮
+        QPushButton *loadSequenceBtn = new QPushButton("读入序列");
+        step1Layout->addWidget(loadSequenceBtn, 0, Qt::AlignRight);
 
-        // 连接下一步按钮
-        QObject::connect(nextStep1Btn, &QPushButton::clicked, [this, stack, stepLabel]() {
-            // 创建新的步骤1_2
+        // 连接读入序列按钮
+        QObject::connect(loadSequenceBtn, &QPushButton::clicked, [this, stack, stepLabel]() {
+            // 创建步骤1_2：设置显示方式
             QWidget *step1_2 = new QWidget();
             QVBoxLayout *step1_2Layout = new QVBoxLayout(step1_2);
 
@@ -296,26 +288,31 @@ private:
                     updateImageDisplay(option);
                 });
             }
+
+            // 添加隐藏图像按钮
+            QPushButton *hideImageBtn = new QPushButton("隐藏图像");
+            displayLayout->addWidget(hideImageBtn);
+            QObject::connect(hideImageBtn, &QPushButton::clicked, [this]() {
+                imageContainer->setVisible(false);
+            });
+
             displayGroup->setLayout(displayLayout);
             step1_2Layout->addWidget(displayGroup);
 
-            // 图像翻转子菜单
-            QGroupBox *transformGroup = new QGroupBox("图像变换");
-            QHBoxLayout *transformLayout = new QHBoxLayout();
-            QStringList transformOptions = {"序列前后交换", "图像左右交换", "图像上下交换"};
-            for (const QString &option : transformOptions) {
-                QPushButton *btn = new QPushButton(option);
-                transformLayout->addWidget(btn);
-                QObject::connect(btn, &QPushButton::clicked, [this, option]() {
-                    transformImages(option);
-                });
-            }
-            transformGroup->setLayout(transformLayout);
-            step1_2Layout->addWidget(transformGroup);
+            // 下一步按钮
+            QPushButton *nextStep1_2Btn = new QPushButton("下一步");
+            step1_2Layout->addWidget(nextStep1_2Btn, 0, Qt::AlignRight);
+
+            // 连接下一步按钮
+            QObject::connect(nextStep1_2Btn, &QPushButton::clicked, [this, stack, stepLabel]() {
+                // 切换到步骤2
+                stack->setCurrentIndex(2); // 步骤2的索引为2
+                stepLabel->setText("步骤 2/3: 读入参考序列");
+            });
 
             // 添加步骤1_2到stack
-            stack->insertWidget(1, step1_2);
-            stack->setCurrentIndex(1);
+            stack->insertWidget(1, step1_2); // 步骤1_2的索引为1
+            stack->setCurrentIndex(1); // 切换到步骤1_2
             stepLabel->setText("步骤 1/3: 设置显示方式");
         });
 
@@ -348,49 +345,196 @@ private:
         refRangeLayout->addWidget(refEndEdit);
         step2Layout->addLayout(refRangeLayout);
 
-        // 操作按钮
-        QHBoxLayout *step2BtnLayout = new QHBoxLayout();
-        QPushButton *prevStep2Btn = new QPushButton("上一步");
-        QPushButton *nextStep2Btn = new QPushButton("下一步");
-        step2BtnLayout->addWidget(prevStep2Btn);
-        step2BtnLayout->addWidget(nextStep2Btn);
-        step2Layout->addLayout(step2BtnLayout);
+        // 读入序列按钮
+        QPushButton *loadRefSequenceBtn = new QPushButton("读入序列");
+        step2Layout->addWidget(loadRefSequenceBtn, 0, Qt::AlignRight);
+
+        // 连接读入序列按钮
+        QObject::connect(loadRefSequenceBtn, &QPushButton::clicked, [this, stack, stepLabel]() {
+            // 创建步骤2_2：设置显示方式
+            QWidget *step2_2 = new QWidget();
+            QVBoxLayout *step2_2Layout = new QVBoxLayout(step2_2);
+
+            // 显示方式子菜单
+            QGroupBox *displayGroup = new QGroupBox("显示方式");
+            QHBoxLayout *displayLayout = new QHBoxLayout();
+            QStringList displayOptions = {"1×1", "2×2", "3×3", "4×4"};
+            for (const QString &option : displayOptions) {
+                QPushButton *btn = new QPushButton(option);
+                displayLayout->addWidget(btn);
+                QObject::connect(btn, &QPushButton::clicked, [this, option]() {
+                    updateImageDisplay(option);
+                });
+            }
+
+            // 添加隐藏图像按钮
+            QPushButton *hideImageBtn = new QPushButton("隐藏图像");
+            displayLayout->addWidget(hideImageBtn);
+            QObject::connect(hideImageBtn, &QPushButton::clicked, [this]() {
+                imageContainer->setVisible(false);
+            });
+
+            displayGroup->setLayout(displayLayout);
+            step2_2Layout->addWidget(displayGroup);
+            // 下一步按钮
+            QPushButton *nextStep1_2Btns = new QPushButton("上一步");
+            step2_2Layout->addWidget(nextStep1_2Btns, 0, Qt::AlignRight);
+
+            // 连接下一步按钮
+            QObject::connect(nextStep1_2Btns, &QPushButton::clicked, [this, stack, stepLabel]() {
+                stack->setCurrentIndex(1); // 切换到步骤1_2
+                stepLabel->setText("步骤 1/3: 设置显示方式");
+            });
+
+            // 下一步按钮
+            QPushButton *nextStep2_2Btn = new QPushButton("下一步");
+            step2_2Layout->addWidget(nextStep2_2Btn, 0, Qt::AlignRight);
+
+            // 连接下一步按钮
+            QObject::connect(nextStep2_2Btn, &QPushButton::clicked, [stack, stepLabel]() {
+                stack->setCurrentIndex(4); // 切换到步骤3
+                stepLabel->setText("步骤 3/3: 序列融合");
+            });
+
+            // 添加步骤2_2到stack
+            stack->insertWidget(3, step2_2); // 步骤2_2的索引为3
+            stack->setCurrentIndex(3); // 切换到步骤2_2
+            stepLabel->setText("步骤 2/3: 设置显示方式");
+        });
 
         // 步骤3：序列融合
         QWidget *step3 = new QWidget();
-        QVBoxLayout *step3Layout = new QVBoxLayout(step3);
-        
-        // 融合控制
-        QHBoxLayout *fusionCtrlLayout = new QHBoxLayout();
-        QPushButton *manualFusionBtn = new QPushButton("手动融合");
-        QPushButton *autoFusionBtn = new QPushButton("自动融合");
+        QHBoxLayout *step3Layout = new QHBoxLayout(step3);  // 设置step3的布局
+
+        // 左侧：任务选单
+        QWidget *taskPanel = new QWidget();
+        QVBoxLayout *taskLayout = new QVBoxLayout(taskPanel);
+
+        // 手动融合/自动融合选择
+        QGroupBox *fusionModeGroup = new QGroupBox("融合方式");
+        QVBoxLayout *fusionModeLayout = new QVBoxLayout();
+        QRadioButton *manualFusionBtn = new QRadioButton("手动融合");
+        QRadioButton *autoFusionBtn = new QRadioButton("自动融合");
+        fusionModeLayout->addWidget(manualFusionBtn);
+        fusionModeLayout->addWidget(autoFusionBtn);
+        fusionModeGroup->setLayout(fusionModeLayout);
+        taskLayout->addWidget(fusionModeGroup);
+
+        // 手动融合功能
+        QWidget *manualFusionPanel = new QWidget();
+        QVBoxLayout *manualFusionLayout = new QVBoxLayout(manualFusionPanel);
+
+        // 基本序列/参考序列/融合按钮
+        QHBoxLayout *sequenceCtrlLayout = new QHBoxLayout();
+        QPushButton *baseSeqBtn = new QPushButton("基本序列");
+        QPushButton *refSeqBtn = new QPushButton("参考序列");
+        QPushButton *fusionBtn = new QPushButton("融合");
+        sequenceCtrlLayout->addWidget(baseSeqBtn);
+        sequenceCtrlLayout->addWidget(refSeqBtn);
+        sequenceCtrlLayout->addWidget(fusionBtn);
+        manualFusionLayout->addLayout(sequenceCtrlLayout);
+
+        // 标记点选取面板
+        QWidget *markerPanel = new QWidget();
+        QHBoxLayout *markerLayout = new QHBoxLayout(markerPanel);
+
+        // 基本序列标记点
+        QWidget *baseMarkerPanel = new QWidget();
+        QVBoxLayout *baseMarkerLayout = new QVBoxLayout(baseMarkerPanel);
+        QLabel *baseMarkerLabel = new QLabel("基本序列标记点");
+        QListWidget *baseMarkerList = new QListWidget();
+        baseMarkerList->addItems({"标记点1", "标记点2", "标记点3", "标记点4"});
+        baseMarkerLayout->addWidget(baseMarkerLabel);
+        baseMarkerLayout->addWidget(baseMarkerList);
+
+        // 基本序列操作按钮
+        QWidget *baseMarkerCtrlPanel = new QWidget();
+        QVBoxLayout *baseMarkerCtrlLayout = new QVBoxLayout(baseMarkerCtrlPanel);
+        QPushButton *addBaseMarkerBtn = new QPushButton("添加");
+        QPushButton *replaceBaseMarkerBtn = new QPushButton("替换");
+        QPushButton *deleteBaseMarkerBtn = new QPushButton("删除");
+        QPushButton *clearBaseMarkerBtn = new QPushButton("删除全部");
+        baseMarkerCtrlLayout->addWidget(addBaseMarkerBtn);
+        baseMarkerCtrlLayout->addWidget(replaceBaseMarkerBtn);
+        baseMarkerCtrlLayout->addWidget(deleteBaseMarkerBtn);
+        baseMarkerCtrlLayout->addWidget(clearBaseMarkerBtn);
+        baseMarkerCtrlPanel->setVisible(false); // 初始隐藏
+
+        // 参考序列标记点
+        QWidget *refMarkerPanel = new QWidget();
+        QVBoxLayout *refMarkerLayout = new QVBoxLayout(refMarkerPanel);
+        QLabel *refMarkerLabel = new QLabel("参考序列标记点");
+        QListWidget *refMarkerList = new QListWidget();
+        refMarkerList->addItems({"标记点1", "标记点2", "标记点3", "标记点4"});
+        refMarkerLayout->addWidget(refMarkerLabel);
+        refMarkerLayout->addWidget(refMarkerList);
+
+        // 参考序列操作按钮
+        QWidget *refMarkerCtrlPanel = new QWidget();
+        QVBoxLayout *refMarkerCtrlLayout = new QVBoxLayout(refMarkerCtrlPanel);
+        QPushButton *addRefMarkerBtn = new QPushButton("添加");
+        QPushButton *replaceRefMarkerBtn = new QPushButton("替换");
+        QPushButton *deleteRefMarkerBtn = new QPushButton("删除");
+        QPushButton *clearRefMarkerBtn = new QPushButton("删除全部");
+        refMarkerCtrlLayout->addWidget(addRefMarkerBtn);
+        refMarkerCtrlLayout->addWidget(replaceRefMarkerBtn);
+        refMarkerCtrlLayout->addWidget(deleteRefMarkerBtn);
+        refMarkerCtrlLayout->addWidget(clearRefMarkerBtn);
+        refMarkerCtrlPanel->setVisible(false); // 初始隐藏
+
+        // 将标记点面板和操作按钮添加到布局
+        markerLayout->addWidget(baseMarkerPanel);
+        markerLayout->addWidget(baseMarkerCtrlPanel);
+        markerLayout->addWidget(refMarkerPanel);
+        markerLayout->addWidget(refMarkerCtrlPanel);
+        manualFusionLayout->addWidget(markerPanel);
+
+        // 连接基本序列按钮
+        QObject::connect(baseSeqBtn, &QPushButton::clicked, [baseMarkerCtrlPanel, refMarkerCtrlPanel]() {
+            baseMarkerCtrlPanel->setVisible(true);
+            refMarkerCtrlPanel->setVisible(false);
+        });
+
+        // 连接参考序列按钮
+        QObject::connect(refSeqBtn, &QPushButton::clicked, [baseMarkerCtrlPanel, refMarkerCtrlPanel]() {
+            baseMarkerCtrlPanel->setVisible(false);
+            refMarkerCtrlPanel->setVisible(true);
+        });
+
+        // 将手动融合面板添加到任务选单
+        taskLayout->addWidget(manualFusionPanel);
+        manualFusionPanel->setVisible(false); // 初始隐藏
+
+        // 连接手动融合按钮
+        QObject::connect(manualFusionBtn, &QRadioButton::toggled, [manualFusionPanel]() {
+            manualFusionPanel->setVisible(true);
+        });
+
+        // 连接自动融合按钮
+        QObject::connect(autoFusionBtn, &QRadioButton::toggled, [manualFusionPanel]() {
+            manualFusionPanel->setVisible(false);
+        });
+
+        // 上一步按钮
         QPushButton *prevStep3Btn = new QPushButton("上一步");
-        fusionCtrlLayout->addWidget(manualFusionBtn);
-        fusionCtrlLayout->addWidget(autoFusionBtn);
-        fusionCtrlLayout->addWidget(prevStep3Btn);
-        step3Layout->addLayout(fusionCtrlLayout);
+        taskLayout->addWidget(prevStep3Btn);
 
-        // 添加步骤
-        stack->addWidget(step1);
-        stack->addWidget(step2);
-        stack->addWidget(step3);
-
-        
-        QObject::connect(prevStep2Btn, &QPushButton::clicked, [stack, stepLabel]() {
-            stack->setCurrentIndex(0);
-            stepLabel->setText("步骤 1/3: 读入基本序列");
-        });
-
-        
-
+        // 连接上一步按钮
         QObject::connect(prevStep3Btn, &QPushButton::clicked, [stack, stepLabel]() {
-            stack->setCurrentIndex(1);
-            stepLabel->setText("步骤 2/3: 读入参考序列");
+            stack->setCurrentIndex(3); // 切换到步骤2_2
+            stepLabel->setText("步骤 2/3: 设置显示方式");
         });
-        QObject::connect(nextStep2Btn, &QPushButton::clicked, [stack, stepLabel]() {
-            stack->setCurrentIndex(2);
-            stepLabel->setText("步骤 3/3: 序列融合");
-        });
+
+        // 将任务选单添加到步骤3布局
+        step3Layout->addWidget(taskPanel);
+
+        // 添加所有步骤
+        stack->addWidget(step1); // 步骤1的索引为0
+        stack->addWidget(step2); // 步骤2的索引为2
+        stack->addWidget(step3); // 步骤3的索引为4
+
+        // 初始显示步骤1
+        stack->setCurrentIndex(0);
 
         layout->addWidget(stack);
         tabWidget->addTab(tab, "序列操作");
@@ -446,19 +590,23 @@ private:
             delete child->widget();
             delete child;
         }
+        imageLabels.clear();
+
+        // 计算每个图像的大小
+        int imageSize = 600 / qMax(rows, cols);  // 600是固定图像区域大小
 
         // 创建新的图像显示
-        int imageSize = 800 / qMax(rows, cols);  // 800是固定图像区域大小
         for (int i = 0; i < rows * cols; ++i) {
             QLabel *imageLabel = new QLabel();
             imageLabel->setFixedSize(imageSize, imageSize);
             imageLabel->setAlignment(Qt::AlignCenter);
-            imageLabel->setStyleSheet("background-color: #FFFFFF; border: 1px solid #1C6EA4;");
+            imageLabel->setStyleSheet("background-color: #FFFFFF; border: 0px;");  // 去除边框
 
-            // 加载默认图片
-            QPixmap defaultImage("./img/1.jpg");
-            if(!defaultImage.isNull()) {
-                imageLabel->setPixmap(defaultImage.scaled(imageSize, imageSize, Qt::KeepAspectRatio));
+            // 加载对应编号的图片
+            QString imagePath = QString("./img/%1.jpg").arg(i + 1);
+            QPixmap image(imagePath);
+            if(!image.isNull()) {
+                imageLabel->setPixmap(image.scaled(imageSize, imageSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
             } else {
                 imageLabel->setText("图片加载失败");
             }
@@ -474,14 +622,27 @@ private:
     // 新增方法：图像变换
     void transformImages(const QString &option) {
         if (option == "序列前后交换") {
-            // 实现序列前后交换逻辑
-            // ...
+            // 序列前后交换：将图像序列的前半部分和后半部分交换
+            int half = imageLabels.size() / 2;
+            for (int i = 0; i < half; ++i) {
+                QPixmap temp = *imageLabels[i]->pixmap();
+                imageLabels[i]->setPixmap(*imageLabels[i + half]->pixmap());
+                imageLabels[i + half]->setPixmap(temp);
+            }
         } else if (option == "图像左右交换") {
-            // 实现图像左右交换逻辑
-            // ...
+            // 图像左右镜像：将每张图像左右翻转
+            for (QLabel *imageLabel : imageLabels) {
+                QPixmap pixmap = *imageLabel->pixmap();
+                QPixmap mirrored = pixmap.transformed(QTransform().scale(-1, 1)); // 水平镜像
+                imageLabel->setPixmap(mirrored);
+            }
         } else if (option == "图像上下交换") {
-            // 实现图像上下交换逻辑
-            // ...
+            // 图像上下镜像：将每张图像上下翻转
+            for (QLabel *imageLabel : imageLabels) {
+                QPixmap pixmap = *imageLabel->pixmap();
+                QPixmap mirrored = pixmap.transformed(QTransform().scale(1, -1)); // 垂直镜像
+                imageLabel->setPixmap(mirrored);
+            }
         }
     }
 };
